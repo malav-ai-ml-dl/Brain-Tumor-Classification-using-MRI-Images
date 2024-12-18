@@ -4,25 +4,31 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 from io import BytesIO
 import gdown
+import h5py
 import os
 
-# Download the model file from Google Drive
+# Function to download and validate the model
 def download_model():
-    model_url = "https://drive.google.com/file/d/1lDBpPogpcNfdPWl3iw2GyX2JHPuWMppj/view?usp=drive_link"  # Replace FILE_ID with your actual file ID
+    url = "YOUR_GOOGLE_DRIVE_LINK"  # Replace with your Google Drive direct download link
     output_path = "brain_tumor_model.h5"
-    
     if not os.path.exists(output_path):
         st.write("Downloading model from Google Drive...")
-        gdown.download(model_url, output_path, quiet=False)
+        gdown.download(url, output_path, quiet=False)
         st.write("Model downloaded successfully!")
-    
+    # Validate the downloaded file
+    try:
+        with h5py.File(output_path, "r") as f:
+            st.write("Model file validation successful.")
+    except Exception as e:
+        st.error(f"Model file validation failed: {e}")
+        st.stop()
     return tf.keras.models.load_model(output_path)
 
 # Load the model
 model = download_model()
 
 # Define the class names based on your dataset
-class_names = ['no_tumor', 'meningioma', 'glioma', 'pituitary_tumor']  # Adjust this list as needed
+class_names = ['no_tumor', 'meningioma', 'glioma', 'pituitary_tumor']
 
 # Function to adjust predictions
 def adjusted_prediction(predicted_class):
@@ -39,7 +45,7 @@ def predict_image_class(uploaded_file):
     prediction = model.predict(img_array)
     predicted_class_index = np.argmax(prediction)
     predicted_class_name = class_names[predicted_class_index]
-    predicted_probability = np.max(prediction)  # Get the maximum probability
+    predicted_probability = np.max(prediction)
     adjusted_class_name = adjusted_prediction(predicted_class_name)
     return adjusted_class_name, predicted_probability
 
@@ -58,21 +64,18 @@ app_mode = st.sidebar.selectbox("Choose a mode", ["Home", "Tumor Information"])
 
 if app_mode == "Home":
     st.write("Upload an MRI image to predict the presence of a brain tumor.")
-    
-    # File uploader
     uploaded_file = st.file_uploader("Choose an MRI image...", type=["jpg", "jpeg", "png"])
 
     if uploaded_file is not None:
         st.image(uploaded_file, caption='Uploaded Image.', use_column_width=True)
+        st.write("")
         st.write("Classifying...")
 
-        # Predict and display the result directly using the uploaded_file
         adjusted_class, predicted_probability = predict_image_class(uploaded_file)
         st.write(f"Predicted Class: *{adjusted_class}*")
-        st.write(f"Confidence: *{predicted_probability * 100:.2f}%*")  # Display confidence
+        st.write(f"Confidence: *{predicted_probability * 100:.2f}%*")
 
-        # Additional feedback
-        if predicted_probability < 0.6:  # You can adjust this threshold
+        if predicted_probability < 0.6:
             st.warning("The prediction confidence is low. Please consider reviewing the image quality or try another image.")
 
 elif app_mode == "Tumor Information":
