@@ -8,7 +8,7 @@ import os
 
 # Download the model file from Google Drive
 def download_model():
-    model_url = "https://drive.google.com/file/d/1lDBpPogpcNfdPWl3iw2GyX2JHPuWMppj/view?usp=drive_link"  # Replace FILE_ID with your actual file ID
+    model_url = "https://drive.google.com/file/d/1lDBpPogpcNfdPWl3iw2GyX2JHPuWMppj/view?usp=sharing"  # Replace FILE_ID with your actual file ID
     output_path = "brain_tumor_model.h5"
     
     if not os.path.exists(output_path):
