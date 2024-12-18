@@ -3,9 +3,23 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 from io import BytesIO
+import gdown
+import os
+
+# Download the model file from Google Drive
+def download_model():
+    model_url = "https://drive.google.com/file/d/1lDBpPogpcNfdPWl3iw2GyX2JHPuWMppj/view?usp=drive_link"  # Replace FILE_ID with your actual file ID
+    output_path = "brain_tumor_model.h5"
+    
+    if not os.path.exists(output_path):
+        st.write("Downloading model from Google Drive...")
+        gdown.download(model_url, output_path, quiet=False)
+        st.write("Model downloaded successfully!")
+    
+    return tf.keras.models.load_model(output_path)
 
 # Load the model
-model = tf.keras.models.load_model('brain_tumor_model.h5')
+model = download_model()
 
 # Define the class names based on your dataset
 class_names = ['no_tumor', 'meningioma', 'glioma', 'pituitary_tumor']  # Adjust this list as needed
@@ -50,7 +64,6 @@ if app_mode == "Home":
 
     if uploaded_file is not None:
         st.image(uploaded_file, caption='Uploaded Image.', use_column_width=True)
-        st.write("")
         st.write("Classifying...")
 
         # Predict and display the result directly using the uploaded_file
